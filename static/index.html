@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kavach | AI Voice Deepfake Scanner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #090d16;
+            --surface: #111726;
+            --surface-card: #161e31;
+            --surface-border: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-cyan: #06b6d4;
+            --accent-blue: #3b82f6;
+            --danger-red: #ef4444;
+            --danger-bg: rgba(239, 68, 68, 0.12);
+            --safe-green: #10b981;
+            --safe-bg: rgba(16, 185, 129, 0.12);
+            --warn-amber: #f59e0b;
+            --warn-bg: rgba(245, 158, 11, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .header .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(6, 182, 212, 0.12);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            color: var(--accent-cyan);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 5px 14px;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 12px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #ffffff 40%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 15px;
+            max-width: 580px;
+            line-height: 1.5;
+        }
+
+        .main-card {
+            width: 100%;
+            max-width: 660px;
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Mode Selection Tabs */
+        .tabs {
+            display: flex;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--surface-border);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 22px;
+            gap: 6px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--accent-blue);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .tab-btn:hover:not(.active) {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        /* Voice Recorder Area */
+        .recorder-zone {
+            border: 1px solid var(--surface-border);
+            border-radius: 16px;
+            padding: 26px 20px;
+            text-align: center;
+            background: rgba(15, 23, 42, 0.4);
+        }
+
+        .rec-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .record-btn-round {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            border: 3px solid rgba(239, 68, 68, 0.4);
+            background: #ef4444;
+            color: #ffffff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+            transition: all 0.25s ease;
+            outline: none;
+        }
+
+        .record-btn-round:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 28px rgba(239, 68, 68, 0.6);
+        }
+
+        .record-btn-round.recording {
+            animation: pulse-red 1.2s infinite;
+            background: #b91c1c;
+            border-color: #fca5a5;
+        }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 18px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .rec-timer-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-main);
+            background: rgba(30, 41, 59, 0.6);
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--surface-border);
+        }
+
+        .rec-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ef4444;
+            animation: blink 1s infinite;
+            display: none;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .waveform-canvas {
+            width: 100%;
+            height: 72px;
+            background: rgba(10, 14, 23, 0.8);
+            border: 1px solid var(--surface-border);
+            border-radius: 12px;
+            margin-top: 8px;
+        }
+
+        .rec-instruction {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Upload Area */
+        .drop-zone {
+            display: none;
+            border: 2px dashed rgba(148, 163, 184, 0.25);
+            border-radius: 16px;
+            padding: 36px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: rgba(15, 23, 42, 0.4);
+            position: relative;
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--accent-cyan);
+            background: rgba(6, 182, 212, 0.04);
+        }
+
+        .drop-zone input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .drop-zone .icon {
+            width: 42px;
+            height: 42px;
+            margin: 0 auto 12px;
+            color: var(--accent-cyan);
+        }
+
+        .drop-zone h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .drop-zone p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Audio Preview Card */
+        .selected-file-card {
+            display: none;
+            margin-top: 18px;
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid var(--surface-border);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .file-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-main);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 400px;
+        }
+
+        .file-size {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        audio {
+            width: 100%;
+            height: 38px;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        /* Scan Button */
+        .scan-btn {
+            width: 100%;
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 20px rgba(6, 182, 212, 0.25);
+        }
+
+        .scan-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 25px rgba(6, 182, 212, 0.35);
+        }
+
+        .scan-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Results Box */
+        .result-container {
+            display: none;
+            margin-top: 26px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .verdict-banner {
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .verdict-banner.fake {
+            background: var(--danger-bg);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: var(--danger-red);
+        }
+
+        .verdict-banner.real {
+            background: var(--safe-bg);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: var(--safe-green);
+        }
+
+        .verdict-banner.uncertain {
+            background: var(--warn-bg);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: var(--warn-amber);
+        }
+
+        .verdict-title {
+            font-size: 21px;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+        }
+
+        .verdict-sub {
+            font-size: 13px;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        /* 3-Band Risk Gauge */
+        .risk-gauge-card {
+            background: var(--surface-card);
+            border: 1px solid var(--surface-border);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .gauge-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .gauge-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+        }
+
+        .gauge-reading {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .risk-bar-track {
+            height: 16px;
+            border-radius: 8px;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+            background: #1e293b;
+        }
+
+        .band-seg {
+            height: 100%;
+        }
+
+        .band-seg.low {
+            width: 35%;
+            background: #10b981;
+        }
+
+        .band-seg.unc {
+            width: 40%;
+            background: #f59e0b;
+        }
+
+        .band-seg.high {
+            width: 25%;
+            background: #ef4444;
+        }
+
+        .gauge-marker {
+            position: absolute;
+            top: -4px;
+            bottom: -4px;
+            width: 5px;
+            background: #ffffff;
+            box-shadow: 0 0 8px #ffffff;
+            border-radius: 2px;
+            transform: translateX(-50%);
+            transition: left 0.5s ease;
+        }
+
+        .gauge-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 8px;
+            font-weight: 600;
+        }
+
+        /* Active Challenge Box */
+        .challenge-alert-card {
+            display: none;
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 16px;
+        }
+
+        .challenge-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--warn-amber);
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .challenge-desc {
+            font-size: 13px;
+            color: #fde68a;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+
+        .challenge-list {
+            list-style: none;
+            font-size: 12px;
+            color: #fef3c7;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .challenge-list li::before {
+            content: "• ";
+            color: var(--warn-amber);
+            font-weight: bold;
+        }
+
+        .score-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .metric-box {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid var(--surface-border);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .telemetry-row {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .telemetry-row span b {
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/></svg>
+            ON-DEVICE VOICE SHIELD
+        </div>
+        <h1>Kavach Deepfake Voice Scanner</h1>
+        <p>Record your voice or upload an audio clip to detect AI-generated voice clones.</p>
+    </div>
+
+    <div class="main-card">
+        <!-- Input Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" id="tabRecord" onclick="switchMode('record')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="3" x2="12" y2="15"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                Record Voice
+            </button>
+            <button class="tab-btn" id="tabUpload" onclick="switchMode('upload')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Upload File
+            </button>
+        </div>
+
+        <!-- 1. LIVE VOICE RECORDER (DEFAULT) -->
+        <div id="recordContainer" class="recorder-zone">
+            <div class="rec-controls">
+                <button class="record-btn-round" id="recordBtn" onclick="toggleRecording()" title="Click to Record">
+                    <svg id="micIcon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                    <svg id="stopIcon" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" style="display: none;"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+                </button>
+
+                <div class="rec-timer-badge">
+                    <span class="rec-dot" id="recDot"></span>
+                    <span id="recTimer">00:00</span>
+                </div>
+
+                <p class="rec-instruction" id="recInstruction">
+                    Click the microphone to start recording.<br>
+                    Speak clearly for 2 to 4 seconds, then click stop.
+                </p>
+
+                <canvas id="liveWaveform" class="waveform-canvas" width="600" height="72"></canvas>
+            </div>
+        </div>
+
+        <!-- 2. FILE UPLOAD CONTAINER -->
+        <div id="uploadContainer" class="drop-zone" style="display: none;">
+            <input type="file" id="audioFile" accept="audio/*">
+            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            <h3>Click or Drag & Drop Audio Here</h3>
+            <p>Supports MP3, WAV, M4A, AAC, FLAC, OGG</p>
+        </div>
+
+        <!-- AUDIO PREVIEW PLAYER -->
+        <div class="selected-file-card" id="fileCard">
+            <div class="file-info">
+                <span class="file-name" id="fileName">sample.wav</span>
+                <span class="file-size" id="fileSize">0 KB</span>
+            </div>
+            <audio id="audioPreview" controls></audio>
+        </div>
+
+        <!-- ANALYZE BUTTON -->
+        <button class="scan-btn" id="scanBtn" disabled>
+            <div class="spinner" id="spinner"></div>
+            <span id="btnText">Analyze Voice</span>
+        </button>
+
+        <!-- RESULTS CONTAINER -->
+        <div class="result-container" id="resultContainer">
+            <!-- Verdict Banner -->
+            <div class="verdict-banner" id="verdictBanner">
+                <div class="verdict-title" id="verdictTitle">SCANNING...</div>
+                <div class="verdict-sub" id="verdictSub">Confidence level based on consensus</div>
+            </div>
+
+            <!-- 3-Band Risk Assessment -->
+            <div class="risk-gauge-card">
+                <div class="gauge-header">
+                    <span class="gauge-title">Risk Assessment</span>
+                    <span class="gauge-reading" id="gaugeReading">Score: 0.0%</span>
+                </div>
+                <div class="risk-bar-track">
+                    <div class="band-seg low" title="Low Risk Band (0% - 35%)"></div>
+                    <div class="band-seg unc" title="Uncertain Band (35% - 75%)"></div>
+                    <div class="band-seg high" title="High Risk Band (75% - 100%)"></div>
+                    <div class="gauge-marker" id="gaugeMarker" style="left: 0%;"></div>
+                </div>
+                <div class="gauge-labels">
+                    <span>LOW RISK (&lt; 35%)</span>
+                    <span>UNCERTAIN (35% - 75%)</span>
+                    <span>HIGH RISK (&gt; 75%)</span>
+                </div>
+            </div>
+
+            <!-- Active Challenge Suggestions (Uncertain band only) -->
+            <div class="challenge-alert-card" id="challengeCard">
+                <div class="challenge-header">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    ACTIVE CHALLENGE RECOMMENDED
+                </div>
+                <div class="challenge-desc">
+                    The voice sample falls within the <b>Uncertain Band</b>. Recommended verbal verification prompts:
+                </div>
+                <ul class="challenge-list">
+                    <li><b>Secret Family Code Word:</b> Ask caller for private out-of-band passphrase.</li>
+                    <li><b>Surprise Epistemic Question:</b> "What did we have for dinner last Sunday?"</li>
+                    <li><b>Non-Speech Biomarker:</b> Ask caller to cough or hum a 3-second note.</li>
+                </ul>
+            </div>
+
+            <div class="score-metrics">
+                <div class="metric-box">
+                    <div class="metric-label">AI Clone Probability</div>
+                    <div class="metric-value" id="fakeScore" style="color: #ef4444;">0.0%</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Genuine Human Probability</div>
+                    <div class="metric-value" id="realScore" style="color: #10b981;">0.0%</div>
+                </div>
+            </div>
+
+            <div class="telemetry-row">
+                <span>Processing Time: <b id="gpuLatency">0 ms</b></span>
+                <span>Audio Length: <b id="audioDuration">0.0s</b></span>
+                <span>Status: <b style="color: #10b981;">Complete</b></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tabRecord = document.getElementById('tabRecord');
+        const tabUpload = document.getElementById('tabUpload');
+        const recordContainer = document.getElementById('recordContainer');
+        const uploadContainer = document.getElementById('uploadContainer');
+
+        const fileInput = document.getElementById('audioFile');
+        const fileCard = document.getElementById('fileCard');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const audioPreview = document.getElementById('audioPreview');
+        const scanBtn = document.getElementById('scanBtn');
+        const spinner = document.getElementById('spinner');
+        const btnText = document.getElementById('btnText');
+        const resultContainer = document.getElementById('resultContainer');
+
+        const recordBtn = document.getElementById('recordBtn');
+        const micIcon = document.getElementById('micIcon');
+        const stopIcon = document.getElementById('stopIcon');
+        const recDot = document.getElementById('recDot');
+        const recTimer = document.getElementById('recTimer');
+        const recInstruction = document.getElementById('recInstruction');
+        const liveCanvas = document.getElementById('liveWaveform');
+        const canvasCtx = liveCanvas.getContext('2d');
+
+        let currentAudioBlob = null;
+        let isRecording = false;
+        let audioContext = null;
+        let mediaStream = null;
+        let analyser = null;
+        let scriptProcessor = null;
+        let pcmData = [];
+        let recordInterval = null;
+        let secondsElapsed = 0;
+        let animFrameId = null;
+
+        function switchMode(mode) {
+            if (isRecording) stopRecording();
+
+            if (mode === 'record') {
+                tabRecord.classList.add('active');
+                tabUpload.classList.remove('active');
+                recordContainer.style.display = 'block';
+                uploadContainer.style.display = 'none';
+                drawStaticWaveform();
+            } else {
+                tabUpload.classList.add('active');
+                tabRecord.classList.remove('active');
+                uploadContainer.style.display = 'block';
+                recordContainer.style.display = 'none';
+            }
+        }
+
+        function drawStaticWaveform() {
+            canvasCtx.fillStyle = '#0a0e17';
+            canvasCtx.fillRect(0, 0, liveCanvas.width, liveCanvas.height);
+            canvasCtx.lineWidth = 2;
+            canvasCtx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
+            canvasCtx.beginPath();
+            canvasCtx.moveTo(0, liveCanvas.height / 2);
+            canvasCtx.lineTo(liveCanvas.width, liveCanvas.height / 2);
+            canvasCtx.stroke();
+        }
+        drawStaticWaveform();
+
+        // File Selection Handlers
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) handleFile(e.target.files[0]);
+        });
+
+        uploadContainer.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadContainer.classList.add('dragover');
+        });
+
+        uploadContainer.addEventListener('dragleave', () => {
+            uploadContainer.classList.remove('dragover');
+        });
+
+        uploadContainer.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadContainer.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+        });
+
+        function handleFile(file) {
+            currentAudioBlob = file;
+            fileName.textContent = file.name;
+            fileSize.textContent = `${(file.size / 1024).toFixed(1)} KB`;
+            audioPreview.src = URL.createObjectURL(file);
+            fileCard.style.display = 'block';
+            scanBtn.disabled = false;
+            resultContainer.style.display = 'none';
+        }
+
+        // Voice Recording via Web Audio API (16 kHz Mono WAV)
+        async function toggleRecording() {
+            if (!isRecording) {
+                startRecording();
+            } else {
+                stopRecording();
+            }
+        }
+
+        async function startRecording() {
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        channelCount: 1,
+                        echoCancellation: true,
+                        noiseSuppression: false,
+                        autoGainControl: true
+                    }
+                });
+
+                audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+                const source = audioContext.createMediaStreamSource(mediaStream);
+
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 512;
+                source.connect(analyser);
+
+                scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
+                pcmData = [];
+
+                scriptProcessor.onaudioprocess = (e) => {
+                    if (!isRecording) return;
+                    const channelData = e.inputBuffer.getChannelData(0);
+                    pcmData.push(new Float32Array(channelData));
+                };
+
+                source.connect(scriptProcessor);
+                scriptProcessor.connect(audioContext.destination);
+
+                isRecording = true;
+                recordBtn.classList.add('recording');
+                micIcon.style.display = 'none';
+                stopIcon.style.display = 'block';
+                recDot.style.display = 'inline-block';
+                recInstruction.innerHTML = '<b style="color: #ef4444;">Recording...</b> Click button again to finish.';
+
+                secondsElapsed = 0;
+                recTimer.textContent = '00:00';
+                recordInterval = setInterval(() => {
+                    secondsElapsed++;
+                    const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+                    const secs = String(secondsElapsed % 60).padStart(2, '0');
+                    recTimer.textContent = `${mins}:${secs}`;
+                }, 1000);
+
+                drawLiveWaveform();
+
+            } catch (err) {
+                alert(`Microphone permission error: ${err.message}. Please allow microphone access.`);
+                console.error(err);
+            }
+        }
+
+        function stopRecording() {
+            if (!isRecording) return;
+            isRecording = false;
+
+            clearInterval(recordInterval);
+            cancelAnimationFrame(animFrameId);
+
+            recordBtn.classList.remove('recording');
+            micIcon.style.display = 'block';
+            stopIcon.style.display = 'none';
+            recDot.style.display = 'none';
+            recInstruction.innerHTML = '<b style="color: #10b981;">Voice captured!</b> Ready to analyze.';
+
+            if (mediaStream) mediaStream.getTracks().forEach(track => track.stop());
+            if (scriptProcessor) scriptProcessor.disconnect();
+
+            let totalLength = 0;
+            for (let i = 0; i < pcmData.length; i++) totalLength += pcmData[i].length;
+            const mergedSamples = new Float32Array(totalLength);
+            let offset = 0;
+            for (let i = 0; i < pcmData.length; i++) {
+                mergedSamples.set(pcmData[i], offset);
+                offset += pcmData[i].length;
+            }
+
+            const wavBlob = encodeWAV(mergedSamples, 16000);
+            currentAudioBlob = new File([wavBlob], `recorded_voice_${Date.now()}.wav`, { type: 'audio/wav' });
+
+            fileName.textContent = currentAudioBlob.name;
+            fileSize.textContent = `${(currentAudioBlob.size / 1024).toFixed(1)} KB (${secondsElapsed}s recorded)`;
+            audioPreview.src = URL.createObjectURL(currentAudioBlob);
+            fileCard.style.display = 'block';
+            scanBtn.disabled = false;
+            resultContainer.style.display = 'none';
+
+            drawStaticWaveform();
+        }
+
+        function drawLiveWaveform() {
+            if (!isRecording) return;
+            animFrameId = requestAnimationFrame(drawLiveWaveform);
+
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            analyser.getByteTimeDomainData(dataArray);
+
+            canvasCtx.fillStyle = '#0a0e17';
+            canvasCtx.fillRect(0, 0, liveCanvas.width, liveCanvas.height);
+            canvasCtx.lineWidth = 2.5;
+            canvasCtx.strokeStyle = '#06b6d4';
+            canvasCtx.beginPath();
+
+            const sliceWidth = liveCanvas.width * 1.0 / bufferLength;
+            let x = 0;
+
+            for (let i = 0; i < bufferLength; i++) {
+                const v = dataArray[i] / 128.0;
+                const y = v * (liveCanvas.height / 2);
+                if (i === 0) {
+                    canvasCtx.moveTo(x, y);
+                } else {
+                    canvasCtx.lineTo(x, y);
+                }
+                x += sliceWidth;
+            }
+
+            canvasCtx.lineTo(liveCanvas.width, liveCanvas.height / 2);
+            canvasCtx.stroke();
+        }
+
+        function encodeWAV(samples, sampleRate) {
+            const buffer = new ArrayBuffer(44 + samples.length * 2);
+            const view = new DataView(buffer);
+
+            function writeString(view, offset, string) {
+                for (let i = 0; i < string.length; i++) {
+                    view.setUint8(offset + i, string.charCodeAt(i));
+                }
+            }
+
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + samples.length * 2, true);
+            writeString(view, 8, 'WAVE');
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, 1, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            writeString(view, 36, 'data');
+            view.setUint32(40, samples.length * 2, true);
+
+            let idx = 44;
+            for (let i = 0; i < samples.length; i++, idx += 2) {
+                const s = Math.max(-1, Math.min(1, samples[i]));
+                view.setInt16(idx, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+            }
+
+            return new Blob([view], { type: 'audio/wav' });
+        }
+
+        // Scan Submission
+        scanBtn.addEventListener('click', async () => {
+            if (!currentAudioBlob) return;
+
+            scanBtn.disabled = true;
+            spinner.style.display = 'block';
+            btnText.textContent = 'Analyzing voice...';
+
+            const formData = new FormData();
+            formData.append('audio', currentAudioBlob);
+
+            try {
+                const response = await fetch('/api/scan', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || 'Scan failed');
+                }
+
+                const data = await response.json();
+                renderResults(data);
+            } catch (err) {
+                alert(`Error during scan: ${err.message}`);
+            } finally {
+                scanBtn.disabled = false;
+                spinner.style.display = 'none';
+                btnText.textContent = 'Analyze Voice';
+            }
+        });
+
+        function renderResults(data) {
+            resultContainer.style.display = 'block';
+
+            const banner = document.getElementById('verdictBanner');
+            const title = document.getElementById('verdictTitle');
+            const sub = document.getElementById('verdictSub');
+            const gaugeMarker = document.getElementById('gaugeMarker');
+            const gaugeReading = document.getElementById('gaugeReading');
+            const challengeCard = document.getElementById('challengeCard');
+
+            banner.className = 'verdict-banner';
+            const fakeProb = parseFloat(data.fake_probability);
+
+            gaugeMarker.style.left = `${Math.min(100, Math.max(0, fakeProb))}%`;
+            gaugeReading.textContent = `Score: ${fakeProb.toFixed(1)}%`;
+
+            if (fakeProb >= 75.0) {
+                banner.classList.add('fake');
+                title.textContent = '🚨 AI VOICE CLONE DETECTED';
+                sub.textContent = 'Synthetic vocoder cues and non-human speech artifacts detected.';
+                challengeCard.style.display = 'none';
+            } else if (fakeProb >= 35.0) {
+                banner.classList.add('uncertain');
+                title.textContent = '⚠️ UNCERTAIN RISK (BORDERLINE ACOUSTICS)';
+                sub.textContent = 'Acoustic cues exhibit ambiguous traits. Active challenge escalation recommended.';
+                challengeCard.style.display = 'block';
+            } else {
+                banner.classList.add('real');
+                title.textContent = '✅ GENUINE HUMAN VOICE';
+                sub.textContent = 'Natural vocal tract continuity and human speech dynamics verified.';
+                challengeCard.style.display = 'none';
+            }
+
+            document.getElementById('fakeScore').textContent = `${data.fake_probability}%`;
+            document.getElementById('realScore').textContent = `${data.real_probability}%`;
+            document.getElementById('gpuLatency').textContent = `${data.gpu_latency_ms} ms`;
+            document.getElementById('audioDuration').textContent = `${data.duration_seconds}s`;
+
+            resultContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

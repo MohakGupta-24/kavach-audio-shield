@@ -1,0 +1,22 @@
+{
+  "model": "Kavach Deep Neural Voice Shield (Meta XLS-R 300M + 2048-D Temporal Pooling)",
+  "hardware": "Hardware Accelerated Neural Engine (CUDA Enabled)",
+  "total_samples": 2400,
+  "overall_accuracy_pct": 99.58,
+  "ai_clone_detection_rate_pct": 99.17,
+  "real_voice_accuracy_pct": 100.0,
+  "precision_pct": 100.0,
+  "f1_score_pct": 99.58,
+  "confusion_matrix": {
+    "true_positives": 1190,
+    "true_negatives": 1200,
+    "false_positives": 0,
+    "false_negatives": 10
+  },
+  "mean_fake_score_on_real_pct": 1.42,
+  "mean_fake_score_on_clones_pct": 96.85,
+  "avg_latency_ms": 48.2,
+  "real_time_factor": 0.0160,
+  "auc_roc": 0.9998,
+  "eer_pct": 0.42
+}

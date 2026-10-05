@@ -1,0 +1,55 @@
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+*/venv/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Cache Directories
+hf_cache/
+pip_cache/
+.cache/
+
+# Datasets and Large Audio Files
+benchmark_data/
+clean_splits/
+debug_uploads/
+scratch/
+*.wav
+*.mp3
+*.flac
+*.m4a
+*.ogg
+
+# Temporary Scripts & Batches
+create_fig_*.py
+generate_all_wide_figures.py
+embed_final_report.py
+train_definitive_sota_model.py
+train_expert_model.py
+train_final_calibrated_sota.py
+train_final_kavach_expert.py
+train_robust_production_expert.py
+train_zero_leakage_model.py
+create_zero_leakage_splits.py
+experiment_calibrated.py
+test_unseen.py
+detector.py
+launcher.py
+stop.py
+*.bat
+
+# System and IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.log
